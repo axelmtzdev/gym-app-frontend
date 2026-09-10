@@ -105,7 +105,8 @@ interface EjercicioDraft {
                 id="rut-nombre"
                 type="text"
                 class="mt-1 w-full rounded-lg border border-steel bg-surface-2 px-3 py-2.5 text-base text-chalk transition-colors focus:border-iron focus:outline-none"
-                [(ngModel)]="nombre"
+                [ngModel]="nombre()"
+                (ngModelChange)="nombre.set($event)"
                 name="nombre"
               />
             </label>
@@ -246,7 +247,7 @@ export class RutinaFormComponent {
   readonly noDisponible = signal(false);
   readonly guardandoRutina = signal(false);
 
-  nombre = '';
+  readonly nombre = signal('');
   descripcion = '';
   readonly gruposSeleccionados = signal<string[]>([]);
   readonly ejercicios = signal<EjercicioDraft[]>([]);
@@ -267,7 +268,7 @@ export class RutinaFormComponent {
   );
 
   readonly puedeGuardar = computed(
-    () => !!this.nombre.trim() && this.gruposSeleccionados().length > 0 && this.ejercicios().length > 0,
+    () => !!this.nombre().trim() && this.gruposSeleccionados().length > 0 && this.ejercicios().length > 0,
   );
 
   constructor() {
@@ -279,7 +280,7 @@ export class RutinaFormComponent {
       this.cargando.set(true);
       this.rutinasService.obtener(id).subscribe({
         next: (r) => {
-          this.nombre = r.nombre;
+          this.nombre.set(r.nombre);
           this.descripcion = r.descripcion ?? '';
           this.gruposSeleccionados.set(r.grupos);
           this.ejercicios.set(
@@ -426,7 +427,7 @@ export class RutinaFormComponent {
 
     if (this.modo === 'editar' && this.rutinaId) {
       this.rutinasService
-        .actualizar(this.rutinaId, { nombre: this.nombre.trim(), descripcion: this.descripcion.trim() || null })
+        .actualizar(this.rutinaId, { nombre: this.nombre().trim(), descripcion: this.descripcion.trim() || null })
         .subscribe(() => {
           this.router.navigate(['/rutinas', this.rutinaId]);
         });
@@ -436,7 +437,7 @@ export class RutinaFormComponent {
     const draft = this.ejercicios();
     this.rutinasService
       .crear({
-        nombre: this.nombre.trim(),
+        nombre: this.nombre().trim(),
         descripcion: this.descripcion.trim() || null,
         grupos: this.gruposSeleccionados(),
       })

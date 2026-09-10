@@ -9,6 +9,20 @@ import { BackButtonComponent } from '../../core/layout/back-button.component';
 
 const DURACION_DESCANSO_S = 90;
 
+interface NivelRpe {
+  max: number;
+  label: string;
+  imagen: string;
+}
+
+const NIVELES_RPE: NivelRpe[] = [
+  { max: 1, label: 'Meh', imagen: '/assets/rpe-images/meh.png' },
+  { max: 4, label: 'Fácil', imagen: '/assets/rpe-images/facil.png' },
+  { max: 5, label: 'Órale', imagen: '/assets/rpe-images/orale.png' },
+  { max: 8, label: 'Difícil', imagen: '/assets/rpe-images/dificil.png' },
+  { max: 10, label: 'Estuvo perro', imagen: '/assets/rpe-images/estuvo-perro.png' },
+];
+
 @Component({
   selector: 'app-registro',
   standalone: true,
@@ -38,6 +52,22 @@ const DURACION_DESCANSO_S = 90;
               {{ saliendo() ? 'Saliendo…' : 'Salir y descartar' }}
             </button>
           </div>
+        </div>
+      </div>
+    } @else if (entrenamientoCompleto()) {
+      <div class="mx-auto max-w-md space-y-4 p-6">
+        <div class="animate-pop flex flex-col items-center gap-3 rounded-xl bg-surface p-8 text-center">
+          <span class="text-4xl" aria-hidden="true">🎉</span>
+          <p class="font-display text-xl font-extrabold text-chalk">¡Entrenamiento completo!</p>
+          <p class="text-sm text-chalk-dim">Terminaste todos los ejercicios de tu rutina.</p>
+          <button
+            type="button"
+            class="mt-2 w-full rounded-lg bg-iron py-3 text-sm font-bold text-iron-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+            [disabled]="terminando()"
+            (click)="terminar()"
+          >
+            {{ terminando() ? 'Guardando…' : 'Ver resumen' }}
+          </button>
         </div>
       </div>
     } @else if (ejercicioActual(); as ej) {
@@ -128,19 +158,30 @@ const DURACION_DESCANSO_S = 90;
                   name="repeticiones"
                 />
               </label>
-              <label class="block text-sm text-chalk-dim" for="rpe">
-                RPE
-                <input
-                  id="rpe"
-                  type="number"
-                  min="1"
-                  max="10"
-                  inputmode="numeric"
-                  class="mt-1 w-full rounded-lg border border-steel bg-surface-2 px-3 py-2.5 text-base text-chalk transition-colors focus:border-iron focus:outline-none"
-                  [(ngModel)]="rpe"
-                  name="rpe"
-                />
-              </label>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="rpe" class="text-sm text-chalk-dim">RPE (esfuerzo percibido)</label>
+                  <span class="font-display text-sm font-bold text-chalk">{{ rpe }}</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 rounded-xl bg-surface-2 p-3">
+                  <img [src]="nivelRpe(rpe).imagen" [alt]="nivelRpe(rpe).label" class="h-16 w-16 object-contain" />
+                  <p class="text-sm font-semibold text-chalk">{{ nivelRpe(rpe).label }}</p>
+                  <input
+                    id="rpe"
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    class="w-full accent-iron"
+                    [(ngModel)]="rpe"
+                    name="rpe"
+                  />
+                  <div class="flex w-full justify-between text-[10px] text-chalk-dim">
+                    <span>0 · mínimo</span>
+                    <span>10 · máximo</span>
+                  </div>
+                </div>
+              </div>
               <textarea
                 placeholder="Nota rápida (opcional)"
                 aria-label="Nota rápida"
@@ -204,6 +245,9 @@ export class RegistroComponent {
   readonly confirmandoSalida = signal(false);
   readonly saliendo = signal(false);
 
+  readonly entrenamientoCompleto = signal(false);
+  readonly terminando = signal(false);
+
   readonly ejercicioActual = computed(() => this.ejercicios()[this.indice()]);
 
   readonly tiempoDescansoFormato = computed(() => {
@@ -215,7 +259,7 @@ export class RegistroComponent {
 
   pesoKg: number | null = null;
   repeticiones: number | null = null;
-  rpe: number | null = null;
+  rpe = 5;
   nota = '';
 
   constructor() {
@@ -235,7 +279,7 @@ export class RegistroComponent {
         numero_serie: this.numeroSerie(),
         peso_kg: this.pesoKg,
         repeticiones: this.repeticiones,
-        rpe: this.rpe ?? undefined,
+        rpe: this.rpe,
         nota: this.nota || undefined,
       })
       .subscribe(() => {
@@ -244,7 +288,7 @@ export class RegistroComponent {
         this.numeroSerie.update((n) => n + 1);
         this.pesoKg = null;
         this.repeticiones = null;
-        this.rpe = null;
+        this.rpe = 5;
         this.nota = '';
 
         this.iniciarDescanso();
@@ -274,14 +318,21 @@ export class RegistroComponent {
     this.descansando.set(false);
     this.ultimaSerieGuardada.set(null);
 
+    const ejercicioActual = this.ejercicioActual();
+    const faltanSeries = !ejercicioActual || this.numeroSerie() <= ejercicioActual.series_objetivo;
+    if (faltanSeries) return;
+
     if (this.indice() < this.ejercicios().length - 1) {
       this.indice.update((i) => i + 1);
       this.numeroSerie.set(1);
       this.cargarReferencia();
+    } else {
+      this.entrenamientoCompleto.set(true);
     }
   }
 
   terminar(): void {
+    this.terminando.set(true);
     clearInterval(this.intervaloDescanso);
     this.sesionesService.actualizar(this.sesionId, { estado: 'completada' }).subscribe(() => {
       this.router.navigate(['/resumen', this.sesionId]);
@@ -292,7 +343,7 @@ export class RegistroComponent {
     this.saliendo.set(true);
     clearInterval(this.intervaloDescanso);
     this.sesionesService.actualizar(this.sesionId, { estado: 'abandonada' }).subscribe(() => {
-      this.router.navigateByUrl('/rutina');
+      this.router.navigateByUrl('/rutinas');
     });
   }
 
@@ -303,5 +354,9 @@ export class RegistroComponent {
     this.ejerciciosService
       .referencia(ej.ejercicio_id, this.sesionId)
       .subscribe((ref) => this.referencia.set(ref));
+  }
+
+  nivelRpe(valor: number): NivelRpe {
+    return NIVELES_RPE.find((n) => valor <= n.max) ?? NIVELES_RPE[NIVELES_RPE.length - 1];
   }
 }

@@ -8,6 +8,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 _(sin cambios pendientes)_
 
+## [0.3.0] - 2026-09-10
+
+fix: corrige el flujo de series por ejercicio y mejora la experiencia de registro de entrenamiento
+
+### Corregido
+- `RegistroComponent` — `terminarDescanso()` avanzaba al siguiente ejercicio después de **cada** serie sin comparar contra `series_objetivo`, por lo que nunca se registraba más de una serie por ejercicio. Ahora solo avanza cuando se completaron todas las series del ejercicio actual.
+- `RegistroComponent` — al terminar la última serie del último ejercicio, la app dejaba abierto el formulario para "una serie más" en vez de cerrar el entrenamiento. Se agregó una pantalla de cierre ("¡Entrenamiento completo!") que se muestra automáticamente y lleva al resumen.
+- `RegistroComponent.confirmarSalida()` navegaba a la ruta vieja `/rutina` (ya no existe tras el cambio a `/rutinas`); ahora navega a `/rutinas`.
+- `RutinaFormComponent` — el botón "Guardar rutina" no se habilitaba si el nombre era el último campo editado: `puedeGuardar` es un `computed()` que solo reacciona a signals, y `nombre` era un campo plano (`ngModel` de dos vías sin signal), por lo que el computed no se re-evaluaba al escribir el nombre. Se convirtió `nombre` en `signal('')`.
+
+### Añadido
+- Selector visual de RPE en `RegistroComponent`: barra de rango (`input type="range"`, 0–10) acompañada de una imagen y una etiqueta que cambian según el nivel (`meh` 0–1, `facil` 2–4, `orale` 5, `dificil` 6–8, `estuvo-perro` 9–10), usando las imágenes de `public/assets/rpe-images/`. Reemplaza el input numérico simple.
+
 ## [0.2.0] - 2026-09-10
 
 feat: catálogo de ejercicios y gestión de rutinas (crear, editar, elegir entre varias)

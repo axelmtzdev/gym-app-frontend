@@ -1,0 +1,8 @@
+[build]
+  command = "node scripts/set-env.js && npm run build"
+  publish = "dist/gym-app-frontend/browser"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

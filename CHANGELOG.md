@@ -8,6 +8,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 _(sin cambios pendientes)_
 
+## [0.3.2] - 2026-09-10
+
+chore: soporte de despliegue en Netlify sin trackear environment.ts
+
+### Añadido
+- `scripts/set-env.js` — genera `src/environments/environment.ts` a partir de la variable de entorno `API_URL` en tiempo de build (necesario porque ese archivo ya no está trackeado en git; ver `[0.3.1]`).
+- `netlify.toml` — build command (`node scripts/set-env.js && npm run build`), `publish = "dist/gym-app-frontend/browser"` y redirect SPA (`/* -> /index.html`) para que las rutas de Angular Router funcionen al recargar/entrar directo.
+
 ## [0.3.1] - 2026-09-10
 
 chore: deja de versionar los archivos de environment

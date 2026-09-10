@@ -1,0 +1,95 @@
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { of, switchMap } from 'rxjs';
+import { RutinasService } from '../../core/services/rutina.service';
+import { SesionesService } from '../../core/services/sesion.service';
+import { RutinaDetalle } from '../../core/models/api.models';
+
+@Component({
+  selector: 'app-rutina',
+  standalone: true,
+  imports: [RouterLink],
+  template: `
+    <div class="mx-auto max-w-md space-y-6 p-6">
+      @if (cargada()) {
+        @if (rutina(); as r) {
+          <div class="animate-step space-y-6">
+            <div>
+              <h1 class="font-display text-2xl font-extrabold text-chalk">{{ r.nombre }}</h1>
+              <p class="text-sm text-chalk-dim">
+                {{ r.descripcion }} · {{ r.entrenamientos_esta_semana }} entrenamientos esta semana
+              </p>
+            </div>
+
+            <div class="divide-y divide-steel rounded-xl bg-surface px-4">
+              @for (ej of r.ejercicios; track ej.ejercicio_id) {
+                <div class="flex items-center justify-between py-3 text-sm text-chalk">
+                  <span>{{ ej.nombre }}</span>
+                  <span class="font-display font-bold text-chalk-dim">{{ ej.series_objetivo }}×{{ ej.reps_objetivo }}</span>
+                </div>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="w-full rounded-lg bg-iron py-3 text-sm font-bold text-iron-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+              [disabled]="empezando()"
+              (click)="empezar(r.id)"
+            >
+              {{ empezando() ? 'Preparando…' : 'Empezar entrenamiento' }}
+            </button>
+          </div>
+        } @else {
+          <div class="animate-step flex flex-col items-center gap-3 rounded-xl bg-surface px-6 py-12 text-center">
+            <p class="text-sm font-semibold text-chalk">Todavía no tienes una rutina activa</p>
+            <p class="text-sm text-chalk-dim">Cuando tengas una rutina asignada, aparecerá aquí lista para empezar.</p>
+            <a routerLink="/dashboard" class="mt-2 text-sm font-semibold text-iron hover:underline">
+              Volver al inicio
+            </a>
+          </div>
+        }
+      } @else {
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <div class="skeleton h-7 w-40 rounded"></div>
+            <div class="skeleton h-4 w-56 rounded"></div>
+          </div>
+          <div class="skeleton h-48 rounded-xl"></div>
+          <div class="skeleton h-12 rounded-lg"></div>
+        </div>
+      }
+    </div>
+  `,
+})
+export class RutinaComponent {
+  private readonly rutinasService = inject(RutinasService);
+  private readonly sesionesService = inject(SesionesService);
+  private readonly router = inject(Router);
+
+  readonly cargada = signal(false);
+  readonly empezando = signal(false);
+  readonly rutina = signal<RutinaDetalle | undefined>(undefined);
+
+  constructor() {
+    // Toma la primera rutina activa — todavía no hay pantalla para elegir entre varias.
+    this.rutinasService
+      .listar()
+      .pipe(
+        switchMap((rutinas) => {
+          const activa = rutinas.find((r) => r.activa) ?? rutinas[0];
+          return activa ? this.rutinasService.obtener(activa.id) : of(undefined);
+        }),
+      )
+      .subscribe((r) => {
+        this.rutina.set(r);
+        this.cargada.set(true);
+      });
+  }
+
+  empezar(rutinaId: string): void {
+    this.empezando.set(true);
+    this.sesionesService.crear(rutinaId).subscribe((sesion) => {
+      this.router.navigate(['/entrenamiento', sesion.id], { queryParams: { rutina: rutinaId } });
+    });
+  }
+}

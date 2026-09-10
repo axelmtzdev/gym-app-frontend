@@ -1,1 +1,95 @@
-/* You can add global styles to this file, and also import other style files */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Archivo", sans-serif;
+  --font-sans: "IBM Plex Sans", sans-serif;
+
+  --color-ink: #15161b;
+  --color-surface: #1e2027;
+  --color-surface-2: #262933;
+  --color-steel: #3c3f49;
+  --color-chalk: #edeae2;
+  --color-chalk-dim: #9a9ca6;
+  --color-iron: #d9a441;
+  --color-iron-ink: #221a08;
+  --color-signal: #5fa98c;
+  --color-alert: #c96a56;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-ink);
+  color: var(--color-chalk);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  border-color: var(--color-steel);
+}
+
+::selection {
+  background: var(--color-iron);
+  color: var(--color-iron-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-iron);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input,
+textarea {
+  color-scheme: dark;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-step {
+  animation: fade-slide-in 0.28s ease-out;
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pop-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-surface-2) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}

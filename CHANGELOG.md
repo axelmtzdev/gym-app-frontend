@@ -8,6 +8,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 _(sin cambios pendientes)_
 
+## [0.3.1] - 2026-09-10
+
+chore: deja de versionar los archivos de environment
+
+### Cambiado
+- `src/environments/environment.ts` y `environment.development.ts` se sacan del control de versiones (`git rm --cached`) y se agregan a `.gitignore`; siguen existiendo en disco para no romper el build local, pero ya no se suben a GitHub.
+- Se agregan `environment.example.ts` y `environment.development.example.ts` (sí trackeados) como plantilla para que cualquiera pueda recrear los archivos reales localmente.
+
 ## [0.3.0] - 2026-09-10
 
 fix: corrige el flujo de series por ejercicio y mejora la experiencia de registro de entrenamiento

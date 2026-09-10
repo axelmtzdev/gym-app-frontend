@@ -1,25 +1,43 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RutinasService } from '../../core/services/rutina.service';
 import { SesionesService } from '../../core/services/sesion.service';
 import { RutinaDetalle } from '../../core/models/api.models';
+import { BackButtonComponent } from '../../core/layout/back-button.component';
 
 @Component({
   selector: 'app-rutina',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, BackButtonComponent],
   template: `
     <div class="mx-auto max-w-md space-y-6 p-6">
+      <app-back-button (volver)="router.navigateByUrl('/rutinas')" />
+
       @if (cargada()) {
         @if (rutina(); as r) {
           <div class="animate-step space-y-6">
-            <div>
-              <h1 class="font-display text-2xl font-extrabold text-chalk">{{ r.nombre }}</h1>
-              <p class="text-sm text-chalk-dim">
-                {{ r.descripcion }} · {{ r.entrenamientos_esta_semana }} entrenamientos esta semana
-              </p>
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h1 class="font-display text-2xl font-extrabold text-chalk">{{ r.nombre }}</h1>
+                <p class="text-sm text-chalk-dim">
+                  {{ r.descripcion }} · {{ r.entrenamientos_esta_semana }} entrenamientos esta semana
+                </p>
+              </div>
+              <a
+                [routerLink]="['/rutinas', r.id, 'editar']"
+                class="shrink-0 text-sm font-semibold text-iron hover:underline"
+              >
+                Editar
+              </a>
             </div>
+
+            @if (r.grupos.length) {
+              <div class="flex flex-wrap gap-1.5">
+                @for (g of r.grupos; track g) {
+                  <span class="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-chalk-dim">{{ g }}</span>
+                }
+              </div>
+            }
 
             <div class="divide-y divide-steel rounded-xl bg-surface px-4">
               @for (ej of r.ejercicios; track ej.ejercicio_id) {
@@ -41,10 +59,10 @@ import { RutinaDetalle } from '../../core/models/api.models';
           </div>
         } @else {
           <div class="animate-step flex flex-col items-center gap-3 rounded-xl bg-surface px-6 py-12 text-center">
-            <p class="text-sm font-semibold text-chalk">Todavía no tienes una rutina activa</p>
-            <p class="text-sm text-chalk-dim">Cuando tengas una rutina asignada, aparecerá aquí lista para empezar.</p>
-            <a routerLink="/dashboard" class="mt-2 text-sm font-semibold text-iron hover:underline">
-              Volver al inicio
+            <p class="text-sm font-semibold text-chalk">Esta rutina ya no está disponible</p>
+            <p class="text-sm text-chalk-dim">Puede que se haya eliminado o ya no sea tuya.</p>
+            <a routerLink="/rutinas" class="mt-2 text-sm font-semibold text-iron hover:underline">
+              Volver a mis rutinas
             </a>
           </div>
         }
@@ -62,28 +80,28 @@ import { RutinaDetalle } from '../../core/models/api.models';
   `,
 })
 export class RutinaComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly rutinasService = inject(RutinasService);
   private readonly sesionesService = inject(SesionesService);
-  private readonly router = inject(Router);
+  readonly router = inject(Router);
+
+  private readonly rutinaId = this.route.snapshot.paramMap.get('id')!;
 
   readonly cargada = signal(false);
   readonly empezando = signal(false);
   readonly rutina = signal<RutinaDetalle | undefined>(undefined);
 
   constructor() {
-    // Toma la primera rutina activa — todavía no hay pantalla para elegir entre varias.
-    this.rutinasService
-      .listar()
-      .pipe(
-        switchMap((rutinas) => {
-          const activa = rutinas.find((r) => r.activa) ?? rutinas[0];
-          return activa ? this.rutinasService.obtener(activa.id) : of(undefined);
-        }),
-      )
-      .subscribe((r) => {
+    this.rutinasService.obtener(this.rutinaId).subscribe({
+      next: (r) => {
         this.rutina.set(r);
         this.cargada.set(true);
-      });
+      },
+      error: () => {
+        this.rutina.set(undefined);
+        this.cargada.set(true);
+      },
+    });
   }
 
   empezar(rutinaId: string): void {

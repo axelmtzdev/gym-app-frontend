@@ -31,7 +31,7 @@ import { AuthService } from '../services/auth.service';
           </a>
 
           <a
-            routerLink="/rutina"
+            routerLink="/rutinas"
             routerLinkActive="text-iron"
             class="flex flex-1 flex-col items-center gap-1 py-2.5 text-chalk-dim transition-colors hover:text-chalk"
           >
@@ -40,7 +40,20 @@ import { AuthService } from '../services/auth.service';
               <rect x="6" y="6" width="12" height="12" rx="2.5" />
               <path d="M9.5 9.5v5M14.5 9.5v5" stroke-linecap="round" />
             </svg>
-            <span class="text-[11px] font-medium">Rutina</span>
+            <span class="text-[11px] font-medium">Rutinas</span>
+          </a>
+
+          <a
+            routerLink="/ejercicios"
+            routerLinkActive="text-iron"
+            class="flex flex-1 flex-col items-center gap-1 py-2.5 text-chalk-dim transition-colors hover:text-chalk"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+              <path d="M4 12h2M18 12h2M6 8v8M18 8v8M8.5 12h7" stroke-linecap="round" stroke-linejoin="round" />
+              <rect x="2.5" y="10" width="3" height="4" rx="1" />
+              <rect x="18.5" y="10" width="3" height="4" rx="1" />
+            </svg>
+            <span class="text-[11px] font-medium">Ejercicios</span>
           </a>
 
           <a

@@ -76,7 +76,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 
       <div class="flex gap-3">
         <a
-          routerLink="/rutina"
+          routerLink="/rutinas"
           class="flex-1 rounded-lg bg-iron py-3 text-center text-sm font-bold text-iron-ink transition-opacity hover:opacity-90"
         >
           Entrenar hoy

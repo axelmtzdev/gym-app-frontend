@@ -22,9 +22,14 @@ export const routes: Routes = [
               import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
           },
           {
-            path: 'rutina',
+            path: 'rutinas',
             loadComponent: () =>
-              import('./features/rutina/rutina.component').then((m) => m.RutinaComponent),
+              import('./features/rutinas/rutinas-lista.component').then((m) => m.RutinasListaComponent),
+          },
+          {
+            path: 'ejercicios',
+            loadComponent: () =>
+              import('./features/ejercicios/ejercicios.component').then((m) => m.EjerciciosComponent),
           },
           {
             path: 'historial',
@@ -33,6 +38,21 @@ export const routes: Routes = [
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
+      },
+      {
+        path: 'rutinas/nueva',
+        loadComponent: () =>
+          import('./features/rutina/rutina-form.component').then((m) => m.RutinaFormComponent),
+      },
+      {
+        path: 'rutinas/:id/editar',
+        loadComponent: () =>
+          import('./features/rutina/rutina-form.component').then((m) => m.RutinaFormComponent),
+      },
+      {
+        path: 'rutinas/:id',
+        loadComponent: () =>
+          import('./features/rutina/rutina.component').then((m) => m.RutinaComponent),
       },
       {
         path: 'entrenamiento/:sesionId',

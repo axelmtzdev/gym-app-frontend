@@ -8,6 +8,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 _(sin cambios pendientes)_
 
+## [0.2.0] - 2026-09-10
+
+feat: catálogo de ejercicios y gestión de rutinas (crear, editar, elegir entre varias)
+
+### Añadido
+- Pantalla `/ejercicios` (`EjerciciosComponent`) — catálogo agrupado por grupo muscular, con formulario compartido (`EjercicioFormComponent`) para crear, editar y desactivar ejercicios (`PATCH activo:false`).
+- Pantalla `/rutinas` (`RutinasListaComponent`) — lista de rutinas del usuario (nombre, descripción, chips de grupos, conteo de ejercicios), reemplaza el comportamiento anterior de tomar automáticamente "la primera rutina activa".
+- Pantallas `/rutinas/nueva` y `/rutinas/:id/editar` (`RutinaFormComponent`) — un solo componente para crear y editar rutinas:
+  - Modo crear: nombre, descripción y grupos (máx. 3) viven en un borrador local; los ejercicios se envían en secuencia al backend recién al guardar.
+  - Modo editar: agregar/quitar/reordenar ejercicios y editar series/reps persisten de inmediato contra la API.
+  - Selector de ejercicios (picker) embebido como estado interno del mismo componente, filtrado por defecto a los grupos de la rutina, con opción "Ver todos" y acceso directo para crear un ejercicio nuevo sin perder el borrador.
+- Quinta pestaña "Ejercicios" en la navegación inferior (`AppShellComponent`); la pestaña "Rutina" ahora apunta a la lista (`/rutinas`) en vez de a una rutina única.
+- Métodos nuevos en `RutinasService` (`crear`, `actualizar`, `agregarEjercicio`, `actualizarEjercicio`, `quitarEjercicio`) y `EjerciciosService` (`crear`, `actualizar`, filtro por `grupos` en `listar`).
+- Modelos nuevos/ampliados en `api.models.ts`: `Ejercicio` (equipo, activo, creado_en), `Rutina`/`RutinaDetalle` (grupos, total_ejercicios), `EjercicioPlan.id`, payloads de creación/actualización, y la constante `GRUPOS_MUSCULARES`.
+- `core/utils/case.util.ts` (`aSnakeCase`) — normaliza a snake_case las respuestas del backend de `/ejercicios` y `/rutinas`, que vienen en camelCase (`grupoMuscular`, `creadoEn`) aunque los payloads de entrada sí esperan snake_case (asimetría confirmada contra el backend real).
+
+### Cambiado
+- `RutinaComponent` (detalle) ahora lee `:id` de la ruta en vez de tomar la primera rutina activa; se movió a `/rutinas/:id`, con botón de regreso y link para editar.
+- `DashboardComponent` — el botón "Entrenar hoy" apunta a `/rutinas` en vez de `/rutina`.
+- `app.routes.ts` — reestructuración de rutas de rutinas (`/rutinas`, `/rutinas/nueva`, `/rutinas/:id/editar`, `/rutinas/:id`) y nueva ruta `/ejercicios`.
+
 ## [0.1.0] - 2026-09-09
 
 feat: añadir funciones de gestión de sesiones y autenticación de usuarios

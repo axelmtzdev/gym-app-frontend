@@ -1,15 +1,37 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Ejercicio, HistorialEjercicio, ReferenciaEjercicio } from '../models/api.models';
+import { aSnakeCase } from '../utils/case.util';
+import {
+  ActualizarEjercicioPayload,
+  CrearEjercicioPayload,
+  Ejercicio,
+  HistorialEjercicio,
+  ReferenciaEjercicio,
+} from '../models/api.models';
 
 @Injectable({ providedIn: 'root' })
 export class EjerciciosService {
   private readonly http = inject(HttpClient);
 
-  listar(): Observable<Ejercicio[]> {
-    return this.http.get<Ejercicio[]>(`${environment.apiUrl}/ejercicios`);
+  listar(grupos?: string[]): Observable<Ejercicio[]> {
+    const params: Record<string, string> = grupos?.length ? { grupos: grupos.join(',') } : {};
+    return this.http
+      .get<unknown[]>(`${environment.apiUrl}/ejercicios`, { params })
+      .pipe(map((lista) => aSnakeCase<Ejercicio[]>(lista)));
+  }
+
+  crear(payload: CrearEjercicioPayload): Observable<Ejercicio> {
+    return this.http
+      .post<unknown>(`${environment.apiUrl}/ejercicios`, payload)
+      .pipe(map((ej) => aSnakeCase<Ejercicio>(ej)));
+  }
+
+  actualizar(id: number, payload: ActualizarEjercicioPayload): Observable<Ejercicio> {
+    return this.http
+      .patch<unknown>(`${environment.apiUrl}/ejercicios/${id}`, payload)
+      .pipe(map((ej) => aSnakeCase<Ejercicio>(ej)));
   }
 
   referencia(ejercicioId: number, excluirSesion?: string): Observable<ReferenciaEjercicio> {

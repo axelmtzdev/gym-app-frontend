@@ -10,14 +10,21 @@ export interface AuthResponse {
   refresh_token: string;
 }
 
+export const GRUPOS_MUSCULARES = ['Pecho', 'Espalda', 'Hombro', 'Pierna', 'Brazo', 'Core', 'Otro'] as const;
+export type GrupoMuscular = (typeof GRUPOS_MUSCULARES)[number];
+
 export interface Rutina {
   id: string;
   nombre: string;
   descripcion: string | null;
   activa: boolean;
+  creado_en: string;
+  grupos: string[];
+  total_ejercicios: number;
 }
 
 export interface EjercicioPlan {
+  id: number;
   ejercicio_id: number;
   nombre: string;
   orden: number;
@@ -30,7 +37,40 @@ export interface RutinaDetalle {
   nombre: string;
   descripcion: string | null;
   entrenamientos_esta_semana: number;
+  grupos: string[];
   ejercicios: EjercicioPlan[];
+}
+
+export interface CrearRutinaPayload {
+  nombre: string;
+  descripcion?: string | null;
+  grupos: string[];
+}
+
+export interface ActualizarRutinaPayload {
+  nombre?: string;
+  descripcion?: string | null;
+}
+
+export interface CrearRutinaEjercicioPayload {
+  ejercicio_id: number;
+  orden: number;
+  series_objetivo: number;
+  reps_objetivo: number;
+}
+
+export interface ActualizarRutinaEjercicioPayload {
+  orden?: number;
+  series_objetivo?: number;
+  reps_objetivo?: number;
+}
+
+export interface RutinaEjercicioRow {
+  id: number;
+  ejercicio_id: number;
+  orden: number;
+  series_objetivo: number;
+  reps_objetivo: number;
 }
 
 export interface Sesion {
@@ -83,6 +123,22 @@ export interface Ejercicio {
   id: number;
   nombre: string;
   grupo_muscular: string;
+  equipo: string | null;
+  activo: boolean;
+  creado_en: string;
+}
+
+export interface CrearEjercicioPayload {
+  nombre: string;
+  grupo_muscular: string;
+  equipo?: string | null;
+}
+
+export interface ActualizarEjercicioPayload {
+  nombre?: string;
+  grupo_muscular?: string;
+  equipo?: string | null;
+  activo?: boolean;
 }
 
 export interface HistorialEjercicio {
